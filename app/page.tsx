@@ -444,7 +444,7 @@ export default function CalendarPage() {
                 minWidth={510} maxWidth={510} minHeight={340} maxHeight={340}
                 showCover={false} usePortrait={true}
                 drawShadow={true} flippingTime={1000} maxShadowOpacity={0.5}
-                mobileScrollSupport={false} style={{}}
+                mobileScrollSupport={true} style={{}}
                 startPage={0} startZIndex={0} autoSize={false}
                 clickEventForward={true} useMouseEvents={!isMobileView}
                 swipeDistance={30} showPageCorners={true}
