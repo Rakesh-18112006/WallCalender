@@ -1,26 +1,407 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --font-family: var(--font-outfit), "Outfit", "Inter", sans-serif;
+  --bg-primary: #FDF7F2;
+  --text-main: #4A4238;
+  --text-muted: #9E9387;
+  --accent: #C27369;
+  --highlight-bg: rgba(194, 115, 105, 0.15);
+  --grid-border: #E8DFD5;
+  --paper-line: #E8DFD5;
+  --selection-main: #E56B55;
+  --selection-bg: rgba(229, 107, 85, 0.30);
+  
+  /* Responsive sizing */
+  --cal-width: 340px;
+  --cal-height: 510px;
+  --cal-scale: 1;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+@media (max-width: 400px) {
+  :root { --cal-scale: 0.85; }
+}
+@media (max-width: 350px) {
+  :root { --cal-scale: 0.75; }
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  overscroll-behavior: none;
+  height: -webkit-fill-available;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  overscroll-behavior: none;
+  min-height: 100vh;
+  min-height: -webkit-fill-available;
+  width: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  overflow: hidden;
+  touch-action: none;
 }
+
+body {
+  font-family: var(--font-family);
+  color: var(--text-main);
+  background-color: #000;
+  margin: 0; padding: 0;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+
+
+
+
+/* Environment */
+.room-environment {
+  position: fixed; inset: 0;
+  background-image: url('/firefly.webp');
+  background-size: 100vw 100vh;
+  background-position: center;
+  background-repeat: no-repeat;
+  z-index: -1;
+  pointer-events: none;
+  touch-action: none;
+}
+.room-lighting {
+  position: fixed; inset: 0;
+  background: radial-gradient(circle at 10% 40%, rgba(255,255,255,0.08) 0%, rgba(0,0,0,0.15) 100%);
+  pointer-events: none;
+  touch-action: none;
+  z-index: 0;
+}
+
+/* ========== WALL CALENDAR WRAPPER ========== */
+.wall-calendar-wrapper {
+  position: absolute;
+  top: 13vh;
+  left: 50%;
+  transform: translateX(-50%) scale(var(--cal-scale));
+  transform-origin: top center;
+  z-index: 10;
+  width: 340px;
+  height: 510px;
+  background: transparent;
+  display: flex;
+  flex-direction: column;
+  box-shadow:
+    0 40px 60px -15px rgba(0,0,0,0.5),
+    0 10px 15px -5px rgba(0,0,0,0.1);
+  will-change: transform;
+  animation: wall-sway 12s infinite ease-in-out;
+}
+
+@keyframes wall-sway {
+  0%   { transform: translateX(-50%) scale(var(--cal-scale)) perspective(1200px) rotateX(0.5deg) rotateY(-0.2deg); }
+  50%  { transform: translateX(-50%) scale(var(--cal-scale)) perspective(1200px) rotateX(0.8deg) rotateY(0.2deg); }
+  100% { transform: translateX(-50%) scale(var(--cal-scale)) perspective(1200px) rotateX(0.5deg) rotateY(-0.2deg); }
+}
+
+/* ========== FLIPBOOK ENGINE (react-pageflip with 90deg rotation hack) ========== */
+.calendar-flipbook-container {
+  width: 340px;
+  height: 510px;
+  min-height: 510px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  background: transparent;
+  z-index: 10;
+  box-shadow: 0 15px 30px rgba(0,0,0,0.25);
+  border-radius: 2px;
+  overflow: visible;
+}
+
+.flipbook-rotated-wrapper {
+  transform: rotate(90deg);
+  transform-origin: center center;
+}
+
+.flipbook-derotated-page {
+  width: 340px !important;
+  height: 510px !important;
+  transform: rotate(-90deg);
+  transform-origin: center center;
+  display: flex !important;
+  flex-direction: column !important;
+  background: white;
+  overflow: hidden;
+  position: absolute;
+  top: -85px;
+  left: 85px;
+}
+
+/* ========== BACKWARD FLIP OVERLAY ========== */
+.prev-flip-overlay {
+  position: absolute;
+  top: 0; left: 0;
+  width: 340px;
+  height: 510px;
+  z-index: 100;
+  perspective: 800px;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.prev-flip-overlay::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.2);
+  z-index: -1;
+  animation: prevBaseShadow 0.85s cubic-bezier(0.55, 0.06, 0.68, 0.19) forwards;
+}
+
+.prev-flip-page {
+  width: 340px;
+  height: 510px;
+  position: relative;
+  background: white;
+  transform-origin: top center;
+  animation: prevFlipUp 0.85s cubic-bezier(0.55, 0.06, 0.68, 0.19) forwards;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.prev-flip-page::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: linear-gradient(to bottom,
+    rgba(0,0,0,0) 0%,
+    rgba(0,0,0,0.08) 40%,
+    rgba(0,0,0,0.25) 100%
+  );
+  opacity: 0;
+  pointer-events: none;
+  animation: prevPageShadow 0.85s cubic-bezier(0.55, 0.06, 0.68, 0.19) forwards;
+}
+
+@keyframes prevFlipUp {
+  0%   { transform: rotateX(0deg); }
+  100% { transform: rotateX(-180deg); }
+}
+
+@keyframes prevPageShadow {
+  0%   { opacity: 0; }
+  40%  { opacity: 1; }
+  70%  { opacity: 0.8; }
+  100% { opacity: 0; }
+}
+
+@keyframes prevBaseShadow {
+  0%   { opacity: 1; }
+  60%  { opacity: 0.5; }
+  100% { opacity: 0; }
+}
+
+/* Spiral Binding */
+.spiral-binding-top {
+  height: 20px;
+  background: #fff;
+  position: relative;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  background-image: repeating-linear-gradient(
+    to right,
+    transparent 0, transparent 12px,
+    #4a4a4a 12px, #2a2a2a 14px, #6a6a6a 16px,
+    transparent 16px, transparent 20px
+  );
+  box-shadow: 0 -2px 5px rgba(0,0,0,0.1), 0 2px 5px rgba(0,0,0,0.1);
+}
+.spiral-binding-top::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0;
+  height: 4px; top: 8px;
+  background-image: repeating-linear-gradient(
+    to right,
+    transparent 0, transparent 12px,
+    #111 12px, #000 14px,
+    transparent 14px, transparent 20px
+  );
+  opacity: 0.8;
+}
+
+/* ========== MONTH CONTENT ========== */
+.month-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--bg-primary);
+}
+
+/* Hero Image */
+.calendar-hero {
+  position: relative;
+  height: 220px;
+  min-height: 220px;
+  background-size: cover;
+  background-position: center;
+  z-index: 10;
+}
+
+.calendar-bottom {
+  display: flex;
+  flex-direction: column;
+  padding: 8px 12px;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  position: relative;
+  user-select: none;
+}
+
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 8px;
+  border-bottom: 1px solid var(--grid-border);
+  padding-bottom: 6px;
+}
+
+.month-title { display: flex; align-items: baseline; gap: 6px; }
+.month-number { font-size: 2.2rem; font-weight: 300; color: #c9bcaa; line-height: 0.8; }
+.month-name { font-size: 1.2rem; font-weight: 600; color: var(--text-main); }
+.year-title { font-size: 1.1rem; font-weight: 700; color: var(--text-main); }
+
+.calendar-body-layout {
+  display: flex;
+  gap: 10px;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.grid-section {
+  flex: 1.6;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  text-align: center;
+  font-weight: 600;
+  font-size: 0.6rem;
+  color: var(--text-main);
+  margin-bottom: 4px;
+}
+
+.weekend-header, .weekend { color: var(--accent) !important; }
+
+.days-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  grid-template-rows: repeat(6, 1fr);
+  border-top: 1px solid var(--grid-border);
+  border-left: 1px solid var(--grid-border);
+  background: var(--bg-primary);
+  flex: 1;
+  min-height: 0;
+}
+
+.day-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.65rem;
+  font-weight: 500;
+  color: var(--text-main);
+  border-right: 1px solid var(--grid-border);
+  border-bottom: 1px solid var(--grid-border);
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.1s ease;
+  user-select: none;
+  background: #fff;
+  overflow: hidden;
+}
+
+.day-cell:not(.empty):not(.start-date):not(.end-date):not(.in-range):hover {
+  background: rgba(0,0,0,0.04);
+}
+.day-cell.empty { color: transparent; cursor: default; }
+
+/* ========== NOTES ========== */
+.notes-section {
+  flex: 1.5;
+  display: flex;
+  flex-direction: column;
+  background: #FEFCF5;
+  border: 1px solid var(--grid-border);
+  box-shadow: 2px 4px 12px rgba(0,0,0,0.03), inset 0 0 15px rgba(0,0,0,0.01);
+  border-radius: 4px;
+  padding: 10px;
+  position: relative;
+  gap: 6px;
+}
+.notes-section::before {
+  content: '';
+  position: absolute;
+  top: -8px; left: 50%;
+  transform: translateX(-50%) rotate(-1deg);
+  width: 50px; height: 16px;
+  background: rgba(255,255,255,0.7);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  border-radius: 1px;
+}
+.notes-title {
+  font-size: 0.65rem; font-weight: 700; color: var(--text-main);
+  text-transform: uppercase; letter-spacing: 1.2px;
+  border-bottom: 1px solid rgba(0,0,0,0.06); padding-bottom: 4px;
+}
+.notes-empty { font-size: 0.6rem; color: var(--text-muted); font-style: italic; text-align: center; padding: 10px 0; }
+.notes-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; touch-action: pan-y; }
+.note-card { position: relative; padding: 6px; border-bottom: 1px dashed rgba(0,0,0,0.08); display: flex; flex-direction: column; gap: 3px; }
+.note-card:hover .note-actions { opacity: 1; }
+.note-date-badge { font-size: 0.5rem; font-weight: 700; color: var(--selection-main); background: var(--selection-bg); padding: 1px 5px; border-radius: 3px; display: inline-block; width: fit-content; }
+.note-text { font-size: 0.65rem; color: var(--text-main); line-height: 1.4; word-break: break-word; font-family: 'Caveat', 'Segoe Print', cursive, sans-serif; margin: 0; }
+.note-actions { display: flex; gap: 4px; position: absolute; right: 4px; top: 4px; opacity: 0; transition: opacity 0.15s ease; }
+.note-icon-btn { border: none; background: rgba(0,0,0,0.04); border-radius: 3px; cursor: pointer; font-size: 0.6rem; width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; transition: background 0.15s; }
+.note-icon-btn:hover { background: rgba(0,0,0,0.1); }
+.note-icon-btn.delete:hover { background: rgba(229,107,85,0.2); color: var(--selection-main); }
+.note-icon-btn.save { background: rgba(16,185,129,0.15); color: #10B981; }
+.note-icon-btn.cancel { background: rgba(239,68,68,0.12); color: #EF4444; }
+.note-edit-box { display: flex; flex-direction: column; gap: 4px; }
+.note-edit-input { width: 100%; font-size: 0.65rem; font-family: 'Caveat', cursive; padding: 4px; border: 1px solid var(--grid-border); border-radius: 3px; outline: none; background: #fff; }
+.note-edit-input:focus { border-color: var(--selection-main); }
+.note-edit-actions { display: flex; gap: 4px; justify-content: flex-end; }
+.note-add-area { display: flex; flex-direction: column; gap: 4px; border-top: 1px solid rgba(0,0,0,0.06); padding-top: 6px; }
+.note-textarea { width: 100%; font-size: 0.6rem; padding: 5px; border: 1px solid rgba(0,0,0,0.1); border-radius: 4px; outline: none; background: #fff; resize: vertical; min-height: 28px; font-family: var(--font-family); }
+.note-textarea:focus { border-color: var(--selection-main); }
+.note-add-footer { display: flex; justify-content: space-between; align-items: center; }
+.note-saved-toast { font-size: 0.55rem; color: #10B981; font-weight: 600; opacity: 0; transition: opacity 0.3s ease; }
+.note-saved-toast.visible { opacity: 1; }
+.note-save-btn { padding: 3px 10px; font-size: 0.58rem; font-weight: 600; color: white; background: var(--selection-main); border: none; border-radius: 4px; cursor: pointer; transition: background 0.15s; }
+.note-save-btn:hover { background: #D45A44; }
+.holiday-text { font-size: 0.55rem; color: var(--text-muted); margin-top: 6px; margin-left: 5px; }
+
+/* ========== DATE SELECTION ========== */
+.day-cell.start-date, .day-cell.end-date {
+  background: var(--selection-main);
+  color: white !important;
+  font-weight: 700;
+  border-radius: 50%;
+  transform: scale(0.85);
+  z-index: 2;
+  box-shadow: 0 3px 8px rgba(229, 107, 85, 0.35);
+}
+.day-cell.in-range { background: var(--selection-bg); border-radius: 4px; }
+.day-cell.current-day { border: 2px solid var(--selection-main); color: var(--selection-main); font-weight: bold; border-radius: 50%; }
