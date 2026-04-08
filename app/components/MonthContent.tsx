@@ -15,7 +15,7 @@ const MonthContent = ({ mIdx }: { mIdx: number }) => {
   const [newText, setNewText] = useState('');
   const [editId, setEditId] = useState<string | null>(null);
   const [editText, setEditText] = useState('');
-  const [savedToast, setSavedToast] = useState(false);
+  const [toastMsg, setToastMsg] = useState<{text: string, color: string} | null>(null);
 
   useEffect(() => {
     const el = notesRef.current;
@@ -57,14 +57,20 @@ const MonthContent = ({ mIdx }: { mIdx: number }) => {
     };
   }, [mIdx]);
 
-  const flashSaved = () => {
-    setSavedToast(true);
-    setTimeout(() => setSavedToast(false), 1800);
+  const flashToast = (text: string, color: string = '#10B981') => {
+    setToastMsg({ text, color });
+    setTimeout(() => setToastMsg(null), 1800);
   };
 
   const handleAdd = () => {
     const trimmed = newText.trim();
     if (!trimmed) return;
+    
+    if (!sel.start) {
+      flashToast('Choose a date or period', '#EF4444');
+      return;
+    }
+
     const item: NoteItem = {
       id: Date.now().toString(),
       text: trimmed,
@@ -75,7 +81,7 @@ const MonthContent = ({ mIdx }: { mIdx: number }) => {
     setNotes(updated);
     saveNotes(mIdx, updated);
     setNewText('');
-    flashSaved();
+    flashToast('✓ Saved!', '#10B981');
   };
 
   const handleDelete = (id: string) => {
@@ -98,7 +104,7 @@ const MonthContent = ({ mIdx }: { mIdx: number }) => {
     saveNotes(mIdx, updated);
     setEditId(null);
     setEditText('');
-    flashSaved();
+    flashToast('✓ Saved!', '#10B981');
   };
 
   const handleEditCancel = () => {
@@ -224,7 +230,7 @@ const MonthContent = ({ mIdx }: { mIdx: number }) => {
                 rows={1}
               />
               <div className="note-add-footer">
-                <span className={`note-saved-toast ${savedToast ? 'visible' : ''}`}>✓ Saved!</span>
+                <span className="note-saved-toast" style={{ opacity: toastMsg ? 1 : 0, color: toastMsg?.color || '#10B981' }}>{toastMsg?.text || ' '}</span>
                 <button className="note-save-btn" onClick={handleAdd}>Save</button>
               </div>
             </div>

@@ -41,3 +41,11 @@ export function updateHover(day: number | null, mIdx: number | null) {
   }
   eventTarget?.dispatchEvent(new Event('calendar-hover'));
 }
+
+export function clearSelection() {
+  globalSelection = { start: null, end: null };
+  globalHover = null;
+  localStorage.setItem('calendar-selection', JSON.stringify(globalSelection));
+  eventTarget?.dispatchEvent(new Event('calendar-selection'));
+  eventTarget?.dispatchEvent(new Event('calendar-hover'));
+}

@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import HTMLFlipBook from 'react-pageflip';
 import { MONTHS_DATA } from './mocks/monthsData';
-import { loadGlobalSelection } from './store/calendarStore';
+import { loadGlobalSelection, clearSelection } from './store/calendarStore';
 import DesktopPageUI from './components/DesktopPageUI';
 import AttachmentSystem from './components/AttachmentSystem';
 import SpiralRings from './components/SpiralRings';
@@ -50,7 +50,10 @@ export default function CalendarPage() {
   }, []);
 
   const onChangeState = useCallback((e: any) => {
-    if (e.data === 'flipping') playFlipSound();
+    if (e.data === 'flipping') {
+      playFlipSound();
+      clearSelection();
+    }
   }, [playFlipSound]);
 
   const goNext = useCallback(() => {
