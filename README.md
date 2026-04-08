@@ -1,36 +1,50 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Interactive Wall Calendar
 
-## Getting Started
+A polished, highly interactive React/Next.js component built to simulate the physical aesthetic and tactile feel of a real-world wall calendar. 
 
-First, run the development server:
+> **Live Demo:** [Insert Vercel Link Here]
+> **Video Walkthrough:** [Insert Loom/YouTube Link Here]
+
+## ✨ Features & "Stand Out" Implementations
+
+This project satisfies all baseline requirements from the engineering challenge and introduces several advanced UI/UX concepts:
+
+- **Realistic Physical Aesthetics:** Utilizes a custom 3D environment, realistic CSS-based spiral bindings, and a subtle keyframe "breeze" animation (`wall-sway`) to simulate a hanging calendar.
+- **Vertical 3D Flipbook Engine:** Leveraged and heavily customized `react-pageflip` (rotated by 90 degrees) to simulate an authentic vertical page-tearing/flipping motion, complete with **synchronized page-turn audio**.
+- **Dynamic Theming:** Each month uses a custom data structure to inject beautiful, thematic accent colors mapping exactly to the high-quality hero images.
+- **Day Range Selector & State Management:** Users can select start and end date ranges elegantly. Global state is managed efficiently using a custom decoupled vanilla store without heavy framework dependencies, and state is gracefully persisted via `localStorage`.
+- **Integrated Sticky Notes System:** A fully functional localized CRUD note-taking feature. Notes are beautifully textured with handwritten web fonts (`Caveat`) and automatically associate themselves with the user's active Date Range selection. 
+- **Flawless Responsiveness:** Uses Tailwind CSS to shift the layout intelligently. Desktop features a side-by-side component mapping; mobile collapses into a scrollable, touch-friendly interface with specialized native bottom-navigation controls that bypass frustrating touch-screen clipping issues.
+
+## 🏗 Modular Architecture
+
+The codebase strictly adheres to modern Frontend engineering principles. The architecture isolates concerns to keep the view layer extremely clean:
+
+- `/app/components/`: Reusable, single-responsibility UI (e.g., `MonthContent.tsx`, `DesktopPageUI.tsx`).
+- `/app/store/`: Vanilla event-driven state store for global selection/hover states.
+- `/app/utils/`: Pure functions for local storage logic and string extractions.
+- `/app/mocks/`: Clean extraction of all static configuration data mapping out the UI structures.
+- `/app/types/`: Centralized TypeScript interfaces ensuring strict type safety across the board.
+
+## 🚀 Getting Started
+
+First, install the required dependencies:
+
+```bash
+npm install
+```
+
+Run the development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 🛠 Tech Stack
+- **Framework:** Next.js 14 (App Router) / React
+- **Styling:** Tailwind CSS + Vanilla CSS 3D Transforms
+- **Animation Engine:** `react-pageflip`
+- **Languages:** TypeScript
+- **Storage Strategy:** Client-side `localStorage` API integration
