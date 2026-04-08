@@ -2,7 +2,7 @@
 
 :root {
   --font-family: var(--font-outfit), "Outfit", "Inter", sans-serif;
-  --bg-wall: #A5B898; /* Base green for texture fallback */
+  --bg-wall: #A5B898;
   --text-main: #2D3436;
   --text-muted: #636E72;
   --accent: #E17055;
@@ -11,12 +11,10 @@
   --selection-main: #E17055;
   --selection-bg: rgba(225, 112, 85, 0.2);
   
-  /* Glassmorphism Tokens */
   --glass-bg: rgba(255, 255, 255, 0.35);
   --glass-border: rgba(255, 255, 255, 0.4);
   --glass-blur: blur(15px);
   
-  /* Sizing */
   --cal-width: 340px;
   --cal-height: 510px;
   --cal-scale: 1;
@@ -44,22 +42,14 @@ body {
   left: 0;
   overflow: hidden;
   touch-action: none;
-}
-
-body {
   font-family: var(--font-family);
   color: var(--text-main);
   background-color: #000;
   margin: 0; padding: 0;
-  overflow: hidden;
   display: flex;
   justify-content: center;
   align-items: center;
 }
-
-
-
-
 
 /* Environment */
 .room-environment {
@@ -69,7 +59,6 @@ body {
   pointer-events: none;
 }
 
-/* Glassmorphism Scene Overlays */
 .scene-vignette {
   position: fixed; inset: 0;
   background: radial-gradient(circle at center, transparent 20%, rgba(0,0,0,0.1) 100%);
@@ -87,7 +76,7 @@ body {
   overflow: hidden;
 }
 
-/* ========== PHYSICAL ATTACHMENTS ========== */
+/* Physical attachments */
 .calendar-wrapper {
   position: relative;
   display: flex;
@@ -141,7 +130,6 @@ body {
   z-index: 5;
 }
 
-/* Hanging wires connecting spring to calendar */
 .hanging-tether {
   position: absolute;
   width: 2px;
@@ -153,7 +141,73 @@ body {
 .tether-left { left: 44px; }
 .tether-right { right: 44px; }
 
-/* ========== WALL CALENDAR WRAPPER ========== */
+/* 3D spiral binding */
+.spiral-rings-container {
+  position: relative;
+  width: var(--cal-width);
+  height: 18px;
+  display: flex;
+  justify-content: space-evenly;
+  align-items: flex-end;
+  z-index: 20;
+  padding: 0 20px;
+  pointer-events: none;
+  margin-bottom: -6px;
+}
+
+.spiral-ring {
+  width: 22px;
+  height: 18px;
+  position: relative;
+  display: flex;
+  justify-content: center;
+}
+
+.spiral-ring-wire {
+  width: 18px;
+  height: 16px;
+  border: 2.5px solid #1a1a1a;
+  border-bottom: none;
+  border-radius: 9px 9px 0 0;
+  position: relative;
+  background: transparent;
+  box-shadow:
+    0 -1px 2px rgba(0,0,0,0.4),
+    inset 0 1px 1px rgba(255,255,255,0.15),
+    0 2px 4px rgba(0,0,0,0.2);
+  transform: perspective(80px) rotateX(15deg);
+  transform-origin: bottom center;
+}
+
+.spiral-ring-wire::before {
+  content: '';
+  position: absolute;
+  top: 1px;
+  left: 2px;
+  right: 2px;
+  height: 6px;
+  border-radius: 6px 6px 0 0;
+  background: linear-gradient(
+    180deg,
+    rgba(180,180,180,0.5) 0%,
+    rgba(60,60,60,0.1) 100%
+  );
+}
+
+.spiral-ring-wire::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 14px;
+  height: 3px;
+  background: rgba(0,0,0,0.15);
+  border-radius: 50%;
+  filter: blur(1px);
+}
+
+/* Wall calendar container */
 .wall-calendar-wrapper {
   position: relative;
   z-index: 10;
@@ -162,7 +216,6 @@ body {
   background: transparent;
   display: flex;
   flex-direction: column;
-  /* Layered diffused shadows */
   box-shadow:
     0 4px 4px rgba(0,0,0,0.05),
     0 8px 8px rgba(0,0,0,0.05),
@@ -171,15 +224,29 @@ body {
     0 64px 64px rgba(0,0,0,0.05),
     10px 20px 40px rgba(0,0,0,0.15);
   will-change: transform;
-  animation: wall-sway 10s infinite ease-in-out;
+  animation: wall-sway 10s infinite ease-in-out, calendar-3d-wind 5s infinite ease-in-out;
+  transform-style: preserve-3d;
 }
 
 @keyframes wall-sway {
-  0%, 100% { transform: rotate(0deg); }
-  50% { transform: rotate(0.4deg); }
+  0%, 100% { transform: rotate(0deg) rotateY(0deg) rotateX(0deg); }
+  25% { transform: rotate(0.3deg) rotateY(2deg) rotateX(0.5deg); }
+  50% { transform: rotate(0.4deg) rotateY(-1.5deg) rotateX(-0.5deg); }
+  75% { transform: rotate(-0.2deg) rotateY(1deg) rotateX(0.3deg); }
 }
 
-/* ========== FLIPBOOK ENGINE (react-pageflip with 90deg rotation hack) ========== */
+@keyframes calendar-3d-wind {
+  0%   { transform: rotateY(0deg) rotateX(0deg) translateZ(0); }
+  15%  { transform: rotateY(1.8deg) rotateX(-0.4deg) translateZ(2px); }
+  30%  { transform: rotateY(-1.2deg) rotateX(0.6deg) translateZ(1px); }
+  45%  { transform: rotateY(2.2deg) rotateX(-0.3deg) translateZ(3px); }
+  60%  { transform: rotateY(-0.8deg) rotateX(0.5deg) translateZ(1px); }
+  75%  { transform: rotateY(1.5deg) rotateX(-0.6deg) translateZ(2px); }
+  90%  { transform: rotateY(-0.5deg) rotateX(0.2deg) translateZ(0); }
+  100% { transform: rotateY(0deg) rotateX(0deg) translateZ(0); }
+}
+
+/* Flipbook engine */
 .calendar-flipbook-container {
   width: 340px;
   height: 510px;
@@ -207,14 +274,14 @@ body {
   transform-origin: center center;
   display: flex !important;
   flex-direction: column !important;
-  background: transparent; /* Glass effect will be in MonthContent */
+  background: transparent;
   overflow: hidden;
   position: absolute;
   top: calc((var(--cal-height) - var(--cal-width)) / -2);
   left: calc((var(--cal-height) - var(--cal-width)) / 2);
 }
 
-/* ========== BACKWARD FLIP OVERLAY ========== */
+/* Backward flip animation overlays */
 .prev-flip-overlay {
   position: absolute;
   top: 0; left: 0;
@@ -283,7 +350,6 @@ body {
   100% { opacity: 0; }
 }
 
-/* Spiral Binding */
 .spiral-binding-top {
   height: 20px;
   background: #fff;
@@ -299,6 +365,7 @@ body {
   );
   box-shadow: 0 -2px 5px rgba(0,0,0,0.1), 0 2px 5px rgba(0,0,0,0.1);
 }
+
 .spiral-binding-top::after {
   content: '';
   position: absolute;
@@ -313,7 +380,7 @@ body {
   opacity: 0.8;
 }
 
-/* ========== MONTH CONTENT ========== */
+/* Month display */
 .month-content {
   display: flex;
   flex-direction: column;
@@ -326,40 +393,182 @@ body {
   box-shadow: inset 0 0 40px rgba(255, 255, 255, 0.1);
 }
 
-/* Hero Image */
-.calendar-hero {
+/* Geometric hero section */
+.geo-hero {
   position: relative;
-  height: 220px;
-  min-height: 220px;
-  background-size: cover;
-  background-position: center;
+  height: 240px;
+  min-height: 240px;
   z-index: 10;
+  overflow: hidden;
+  border-radius: 16px 16px 0 0;
+  margin-bottom: 8px;
 }
 
+.geo-hero__image {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  z-index: 1;
+}
+
+.geo-hero__brand {
+  position: absolute;
+  inset: 0;
+  clip-path: polygon(0 0, 52% 0, 28% 65%, 0 55%);
+  display: flex;
+  align-items: flex-start;
+  padding: 14px 12px;
+  z-index: 3;
+}
+
+.geo-hero__brand-inner {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.geo-hero__logo {
+  flex-shrink: 0;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3));
+}
+
+.geo-hero__brand-text-group {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.geo-hero__brand-title {
+  font-size: 0.82rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 2.2px;
+  color: rgba(255, 255, 255, 0.95);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+  line-height: 1.15;
+}
+
+.geo-hero__brand-tagline {
+  font-size: 0.52rem;
+  font-weight: 400;
+  letter-spacing: 1.2px;
+  color: rgba(255, 255, 255, 0.7);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.geo-hero__accent-dark {
+  position: absolute;
+  inset: 0;
+  clip-path: polygon(0 55%, 28% 65%, 42% 100%, 0 100%);
+  z-index: 4;
+  opacity: 0.85;
+}
+
+.geo-hero__month-panel {
+  position: absolute;
+  inset: 0;
+  clip-path: polygon(0 55%, 28% 65%, 55% 75%, 55% 100%, 0 100%);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 0 14px 10px;
+  z-index: 5;
+}
+
+.geo-hero__month-num {
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: rgba(255, 255, 255, 0.95);
+  line-height: 1;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.geo-hero__month-name {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.88);
+  text-transform: capitalize;
+  letter-spacing: 1px;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
+.geo-hero__arrow {
+  position: absolute;
+  right: 8px;
+  bottom: 14px;
+  opacity: 0.5;
+}
+
+.geo-hero__hex-wrap {
+  position: absolute;
+  top: 50%;
+  right: 15%;
+  transform: translateY(-50%);
+  z-index: 8;
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.35));
+}
+
+.geo-hero__hex-border {
+  width: 92px;
+  height: 92px;
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  background: rgba(255, 255, 255, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+}
+
+.geo-hero__hex-inner {
+  width: 100%;
+  height: 100%;
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.geo-hero__hex-inner::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+}
+
+.geo-hero__year-text {
+  position: relative;
+  z-index: 2;
+  font-size: 1.3rem;
+  font-weight: 900;
+  color: #fff;
+  letter-spacing: 2px;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+  font-variant-numeric: tabular-nums;
+}
+
+.geo-hero__lines {
+  position: absolute;
+  inset: 0;
+  z-index: 7;
+  pointer-events: none;
+}
+
+/* Calendar layout */
 .calendar-bottom {
   display: flex;
   flex-direction: column;
-  padding: 8px 12px;
+  padding: 8px 10px 6px;
   flex: 1;
   min-height: 0;
   overflow: hidden;
   position: relative;
   user-select: none;
 }
-
-.calendar-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  margin-bottom: 8px;
-  border-bottom: 1px solid var(--grid-border);
-  padding-bottom: 6px;
-}
-
-.month-title { display: flex; align-items: baseline; gap: 6px; }
-.month-number { font-size: 2.2rem; font-weight: 300; color: #c9bcaa; line-height: 0.8; }
-.month-name { font-size: 1.2rem; font-weight: 600; color: var(--text-main); }
-.year-title { font-size: 1.1rem; font-weight: 700; color: var(--text-main); }
 
 .calendar-body-layout {
   display: flex;
@@ -421,34 +630,27 @@ body {
 }
 .day-cell.empty { color: transparent; cursor: default; }
 
-/* ========== NOTES ========== */
+/* Notes */
 .notes-section {
-  flex: 1.5;
+  flex: 1.2;
   display: flex;
   flex-direction: column;
   background: #FEFCF5;
   border: 1px solid var(--grid-border);
   box-shadow: 2px 4px 12px rgba(0,0,0,0.03), inset 0 0 15px rgba(0,0,0,0.01);
   border-radius: 4px;
-  padding: 10px;
+  padding: 8px;
   position: relative;
-  gap: 6px;
+  gap: 4px;
+  margin-top: 22px;
 }
-.notes-section::before {
-  content: '';
-  position: absolute;
-  top: -8px; left: 50%;
-  transform: translateX(-50%) rotate(-1deg);
-  width: 50px; height: 16px;
-  background: rgba(255,255,255,0.7);
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-  border-radius: 1px;
-}
+
 .notes-title {
   font-size: 0.65rem; font-weight: 700; color: var(--text-main);
   text-transform: uppercase; letter-spacing: 1.2px;
   border-bottom: 1px solid rgba(0,0,0,0.06); padding-bottom: 4px;
 }
+
 .notes-empty { font-size: 0.6rem; color: var(--text-muted); font-style: italic; text-align: center; padding: 10px 0; }
 .notes-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; touch-action: pan-y; }
 .note-card { position: relative; padding: 6px; border-bottom: 1px dashed rgba(0,0,0,0.08); display: flex; flex-direction: column; gap: 3px; }
@@ -466,30 +668,20 @@ body {
 .note-edit-input:focus { border-color: var(--selection-main); }
 .note-edit-actions { display: flex; gap: 4px; justify-content: flex-end; }
 .note-add-area { display: flex; flex-direction: column; gap: 4px; border-top: 1px solid rgba(0,0,0,0.06); padding-top: 6px; }
-.note-textarea { width: 100%; font-size: 0.6rem; padding: 5px; border: 1px solid rgba(0,0,0,0.1); border-radius: 4px; outline: none; background: #fff; resize: vertical; min-height: 28px; font-family: var(--font-family); }
-.note-textarea:focus { border-color: var(--selection-main); }
+.note-textarea { width: 100%; font-size: 0.6rem; padding: 5px; border: 1.5px solid #C49A6C; border-radius: 4px; outline: none; background: #fff; resize: vertical; min-height: 28px; font-family: var(--font-family); transition: border-color 0.2s ease; }
+.note-textarea:focus { border-color: #A0724F; box-shadow: 0 0 0 2px rgba(192, 154, 108, 0.2); }
 .note-add-footer { display: flex; justify-content: space-between; align-items: center; }
 .note-saved-toast { font-size: 0.55rem; color: #10B981; font-weight: 600; opacity: 0; transition: opacity 0.3s ease; }
-.calendar-flipbook-page {
-  background: transparent !important;
-}
+.calendar-flipbook-page { background: transparent !important; }
+.flipbook-engine { background: transparent !important; }
+.stf__parent { background: transparent !important; }
+.stf__item { background: transparent !important; }
 
-.flipbook-engine {
-  background: transparent !important;
-}
-
-.stf__parent {
-  background: transparent !important;
-}
-
-.stf__item {
-  background: transparent !important;
-}
 .note-save-btn { padding: 3px 10px; font-size: 0.58rem; font-weight: 600; color: white; background: var(--selection-main); border: none; border-radius: 4px; cursor: pointer; transition: background 0.15s; }
 .note-save-btn:hover { background: #D45A44; }
 .holiday-text { font-size: 0.55rem; color: var(--text-muted); margin-top: 6px; margin-left: 5px; }
 
-/* ========== DATE SELECTION ========== */
+/* Date selection */
 .day-cell.start-date, .day-cell.end-date {
   background: var(--selection-main);
   color: white !important;

@@ -3,6 +3,7 @@ import { MONTHS_DATA } from '../mocks/monthsData';
 import { SelectionState, DateSelection, NoteItem } from '../types';
 import { globalSelection, globalHover, eventTarget, updateSelection, updateHover } from '../store/calendarStore';
 import { loadNotes, saveNotes, getSelectionRangeLabel } from '../utils/notes';
+import GeometricHero from './GeometricHero';
 
 const MonthContent = ({ mIdx }: { mIdx: number }) => {
   const mData = MONTHS_DATA[mIdx];
@@ -20,15 +21,26 @@ const MonthContent = ({ mIdx }: { mIdx: number }) => {
     const el = notesRef.current;
     if (el) {
       const stop = (e: Event) => e.stopPropagation();
+      const smartWheel = (e: WheelEvent) => {
+        const list = el.querySelector('.notes-list') as HTMLElement;
+        if (!list) return;
+        const { scrollTop, scrollHeight, clientHeight } = list;
+        const atTop = scrollTop <= 0;
+        const atBottom = scrollTop + clientHeight >= scrollHeight - 1;
+        const scrollingDown = e.deltaY > 0;
+        if ((!atBottom && scrollingDown) || (!atTop && !scrollingDown)) {
+          e.stopPropagation();
+        }
+      };
       el.addEventListener('mousedown', stop);
       el.addEventListener('touchstart', stop);
       el.addEventListener('pointerdown', stop);
-      el.addEventListener('wheel', stop);
+      el.addEventListener('wheel', smartWheel);
       return () => {
         el.removeEventListener('mousedown', stop);
         el.removeEventListener('touchstart', stop);
         el.removeEventListener('pointerdown', stop);
-        el.removeEventListener('wheel', stop);
+        el.removeEventListener('wheel', smartWheel);
       };
     }
   }, []);
@@ -119,19 +131,16 @@ const MonthContent = ({ mIdx }: { mIdx: number }) => {
 
   return (
     <div className="month-content" style={{ '--theme-color': mData.theme } as React.CSSProperties}>
-      <header className="calendar-hero" style={{ backgroundImage: `url(${mData.heroImg})` }} />
+      <GeometricHero
+        monthName={mData.name}
+        monthNum={mData.num}
+        heroImg={mData.heroImg}
+        themeColor={mData.theme}
+      />
       
       <main className="calendar-bottom">
-        <div className="calendar-header">
-          <div className="month-title">
-            <span className="month-number">{mData.num}</span>
-            <span className="month-name">{mData.name}</span>
-          </div>
-          <div className="year-title">2026</div>
-        </div>
 
         <div className="calendar-body-layout">
-          {/* Calendar Grid */}
           <section className="grid-section">
             <div className="weekdays">
               <span className="weekend-header">Su</span>
@@ -163,7 +172,6 @@ const MonthContent = ({ mIdx }: { mIdx: number }) => {
             </div>
           </section>
 
-          {/* Notes Section */}
           <aside className="notes-section" ref={notesRef}>
             <div className="notes-title">Notes</div>
             
@@ -206,6 +214,12 @@ const MonthContent = ({ mIdx }: { mIdx: number }) => {
                 className="note-textarea"
                 value={newText}
                 onChange={(e) => setNewText(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleAdd();
+                  }
+                }}
                 placeholder="Write a note…"
                 rows={1}
               />

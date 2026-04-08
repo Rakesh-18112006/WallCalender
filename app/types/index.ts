@@ -7,3 +7,10 @@ export interface NoteItem {
   dateRange: string;
   createdAt: number;
 }
+
+export interface GeometricHeroProps {
+  monthName: string;
+  monthNum: string;
+  heroImg: string;
+  themeColor: string;
+}

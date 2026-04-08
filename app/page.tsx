@@ -5,7 +5,10 @@ import HTMLFlipBook from 'react-pageflip';
 import { MONTHS_DATA } from './mocks/monthsData';
 import { loadGlobalSelection } from './store/calendarStore';
 import DesktopPageUI from './components/DesktopPageUI';
-import MonthContent from './components/MonthContent';
+import AttachmentSystem from './components/AttachmentSystem';
+import SpiralRings from './components/SpiralRings';
+import PrevFlipOverlay from './components/PrevFlipOverlay';
+import MobileNavigation from './components/MobileNavigation';
 
 export default function CalendarPage() {
   const bookRef = useRef<any>(null);
@@ -16,7 +19,6 @@ export default function CalendarPage() {
   const [currentPage, setCurrentPage] = useState(0);
   const [isMounted, setIsMounted] = useState(false);
   const [isMobileView, setIsMobileView] = useState(false);
-  // For backward flip: show old month as animated overlay
   const [prevAnim, setPrevAnim] = useState<number | null>(null);
   const animRef = useRef(false);
 
@@ -51,13 +53,11 @@ export default function CalendarPage() {
     if (e.data === 'flipping') playFlipSound();
   }, [playFlipSound]);
 
-  // FORWARD: use react-pageflip flipNext
   const goNext = useCallback(() => {
     if (pageRef.current >= MONTHS_DATA.length - 1) return;
     bookRef.current?.pageFlip()?.flipNext();
   }, []);
 
-  // BACKWARD: Overlay old page + turnToPrevPage + CSS peel animation
   const goPrev = useCallback(() => {
     if (animRef.current || pageRef.current <= 0) return;
     animRef.current = true;
@@ -76,6 +76,41 @@ export default function CalendarPage() {
     }, 850);
   }, [playFlipSound]);
 
+  const touchStartY = useRef<number | null>(null);
+  const touchLock = useRef<boolean>(false);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const tag = (e.target as HTMLElement)?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+
+      if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+        e.preventDefault();
+        goNext();
+      } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+        e.preventDefault();
+        goPrev();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [goNext, goPrev]);
+
+  const handleTouchStart = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
+    touchStartY.current = e.touches[0].clientY;
+  }, []);
+
+  const handleTouchEnd = useCallback((e: React.TouchEvent<HTMLDivElement>) => {
+    if (touchStartY.current === null || touchLock.current) return;
+    const deltaY = touchStartY.current - e.changedTouches[0].clientY;
+    touchStartY.current = null;
+    if (Math.abs(deltaY) < 40) return;
+    touchLock.current = true;
+    setTimeout(() => { touchLock.current = false; }, 900);
+    if (deltaY > 0) goNext();
+    else goPrev();
+  }, [goNext, goPrev]);
+
   const handleWheel = useCallback((e: React.WheelEvent<HTMLDivElement>) => {
     if (wheelLock.current) return;
     if (Math.abs(e.deltaY) < 30) return;
@@ -90,24 +125,13 @@ export default function CalendarPage() {
       <div className="room-environment" />
       <div className="scene-vignette" />
 
-      <div className="calendar-wrapper" onWheel={handleWheel}>
-        {/* Physical Attachment System */}
-        <div className="attachment-system">
-          <div className="metallic-nail nail-left" />
-          <div className="metallic-nail nail-right" />
-          <div className="coil-spring-binding" />
-          <div className="hanging-tether tether-left" />
-          <div className="hanging-tether tether-right" />
-        </div>
+      <div className="calendar-wrapper" onWheel={handleWheel} onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
+        <AttachmentSystem />
+        <SpiralRings />
 
         <div className="wall-calendar-wrapper">
-          {prevAnim !== null && (
-            <div className="prev-flip-overlay">
-              <div className="prev-flip-page">
-                <MonthContent mIdx={prevAnim} />
-              </div>
-            </div>
-          )}
+          <PrevFlipOverlay prevAnim={prevAnim} />
+          
           <div className="calendar-flipbook-container">
             <div className="flipbook-rotated-wrapper">
               {isMounted && (
@@ -123,7 +147,7 @@ export default function CalendarPage() {
                   showCover={false}
                   usePortrait={true}
                   drawShadow={true}
-                  flippingTime={800}
+                  flippingTime={1200}
                   maxShadowOpacity={0.2}
                   mobileScrollSupport={true}
                   style={{ background: 'transparent' }}
@@ -149,28 +173,14 @@ export default function CalendarPage() {
           </div>
         </div>
 
-        {/* Improved Mobile Navigation (Attached below calendar) */}
-        {!isMobileView ? null : (
-          <div className="flex mt-10 mb-20 items-center justify-between gap-5 bg-white/20 backdrop-blur-md px-6 py-2 rounded-full shadow-lg border border-white/30 w-[280px]">
-            <button
-              className="w-10 h-10 flex items-center justify-center rounded-full bg-white/10 border border-white/20 text-white active:scale-90 transition-transform disabled:opacity-30"
-              onClick={goPrev}
-              disabled={pageRef.current <= 0}
-            >
-              <span className="rotate-180">▼</span>
-            </button>
-            <div className="flex flex-col items-center">
-              <span className="text-[8px] uppercase tracking-widest text-white/60 font-bold">Month</span>
-              <span className="text-sm font-bold min-w-[80px] text-center text-white">
-                {MONTHS_DATA[currentPage]?.name}
-              </span>
-            </div>
-            <button
-              className="w-10 h-10 flex items-center justify-center rounded-full bg-white/10 border border-white/20 text-white active:scale-90 transition-transform disabled:opacity-30"
-              onClick={goNext}
-              disabled={pageRef.current >= MONTHS_DATA.length - 1}
-            >▼</button>
-          </div>
+        {isMobileView && (
+          <MobileNavigation
+            currentPage={currentPage}
+            canGoPrev={pageRef.current > 0}
+            canGoNext={pageRef.current < MONTHS_DATA.length - 1}
+            onGoPrev={goPrev}
+            onGoNext={goNext}
+          />
         )}
       </div>
     </main>
