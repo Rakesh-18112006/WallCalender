@@ -86,13 +86,21 @@ export default function CalendarPage() {
   }, [goNext, goPrev]);
 
   return (
-    <>
+    <main className="calendar-scene-container">
       <div className="room-environment" />
-      <div className="room-lighting" />
+      <div className="scene-vignette" />
 
-      <div className="wall-calendar-wrapper" onWheel={handleWheel}>
-        <div className="spiral-binding-top" />
-        <div className="calendar-flipbook-container">
+      <div className="calendar-wrapper" onWheel={handleWheel}>
+        {/* Physical Attachment System */}
+        <div className="attachment-system">
+          <div className="metallic-nail nail-left" />
+          <div className="metallic-nail nail-right" />
+          <div className="coil-spring-binding" />
+          <div className="hanging-tether tether-left" />
+          <div className="hanging-tether tether-right" />
+        </div>
+
+        <div className="wall-calendar-wrapper">
           {prevAnim !== null && (
             <div className="prev-flip-overlay">
               <div className="prev-flip-page">
@@ -100,65 +108,71 @@ export default function CalendarPage() {
               </div>
             </div>
           )}
-          <div className="flipbook-rotated-wrapper">
-            {isMounted && (
-              /* @ts-ignore */
-              <HTMLFlipBook
-                width={510} 
-                height={340} 
-                size="fixed"
-                minWidth={510}
-                maxWidth={510} 
-                minHeight={340}
-                maxHeight={340}
-                showCover={false}
-                usePortrait={true}
-                drawShadow={true}
-                flippingTime={1000}
-                maxShadowOpacity={0.5}
-                mobileScrollSupport={true}
-                style={{}}
-                startPage={0}
-                startZIndex={0}
-                autoSize={false}
-                clickEventForward={true}
-                useMouseEvents={!isMobileView}
-                swipeDistance={30}
-                showPageCorners={true}
-                disableFlipByClick={true}
-                onFlip={onFlip} onChangeState={onChangeState}
-                ref={bookRef} className="flipbook-engine"
-              >
-                {MONTHS_DATA.map((_, i) => (
-                  <DesktopPageUI key={`dp-${i}`} mIdx={i} />
-                ))}
-              </HTMLFlipBook>
-            )}
+          <div className="calendar-flipbook-container">
+            <div className="flipbook-rotated-wrapper">
+              {isMounted && (
+                /* @ts-ignore */
+                <HTMLFlipBook
+                  width={510} 
+                  height={340} 
+                  size="fixed"
+                  minWidth={510}
+                  maxWidth={510} 
+                  minHeight={340}
+                  maxHeight={340}
+                  showCover={false}
+                  usePortrait={true}
+                  drawShadow={true}
+                  flippingTime={800}
+                  maxShadowOpacity={0.2}
+                  mobileScrollSupport={true}
+                  style={{ background: 'transparent' }}
+                  startPage={0}
+                  startZIndex={0}
+                  autoSize={false}
+                  clickEventForward={true}
+                  useMouseEvents={!isMobileView}
+                  swipeDistance={30}
+                  showPageCorners={true}
+                  disableFlipByClick={true}
+                  onFlip={onFlip}
+                  onChangeState={onChangeState}
+                  ref={bookRef}
+                  className="flipbook-engine"
+                >
+                  {MONTHS_DATA.map((_, i) => (
+                    <DesktopPageUI key={`dp-${i}`} mIdx={i} />
+                  ))}
+                </HTMLFlipBook>
+              )}
+            </div>
           </div>
         </div>
 
         {/* Improved Mobile Navigation (Attached below calendar) */}
-        <div className="flex md:hidden mt-10 mb-20 items-center justify-between gap-5 bg-white/95 backdrop-blur-md px-6 py-2 rounded-full shadow-lg border border-[var(--grid-border)] w-[280px] self-center">
-          <button
-            className="w-10 h-10 flex items-center justify-center rounded-full bg-white border border-[var(--grid-border)] text-[var(--text-main)] active:scale-90 transition-transform disabled:opacity-30"
-            onClick={goPrev}
-            disabled={pageRef.current <= 0}
-          >
-            <span className="rotate-180">▼</span>
-          </button>
-          <div className="flex flex-col items-center">
-            <span className="text-[8px] uppercase tracking-widest text-[var(--text-muted)] font-bold">Month</span>
-            <span className="text-sm font-bold min-w-[80px] text-center">
-              {MONTHS_DATA[currentPage]?.name}
-            </span>
+        {!isMobileView ? null : (
+          <div className="flex mt-10 mb-20 items-center justify-between gap-5 bg-white/20 backdrop-blur-md px-6 py-2 rounded-full shadow-lg border border-white/30 w-[280px]">
+            <button
+              className="w-10 h-10 flex items-center justify-center rounded-full bg-white/10 border border-white/20 text-white active:scale-90 transition-transform disabled:opacity-30"
+              onClick={goPrev}
+              disabled={pageRef.current <= 0}
+            >
+              <span className="rotate-180">▼</span>
+            </button>
+            <div className="flex flex-col items-center">
+              <span className="text-[8px] uppercase tracking-widest text-white/60 font-bold">Month</span>
+              <span className="text-sm font-bold min-w-[80px] text-center text-white">
+                {MONTHS_DATA[currentPage]?.name}
+              </span>
+            </div>
+            <button
+              className="w-10 h-10 flex items-center justify-center rounded-full bg-white/10 border border-white/20 text-white active:scale-90 transition-transform disabled:opacity-30"
+              onClick={goNext}
+              disabled={pageRef.current >= MONTHS_DATA.length - 1}
+            >▼</button>
           </div>
-          <button
-            className="w-10 h-10 flex items-center justify-center rounded-full bg-white border border-[var(--grid-border)] text-[var(--text-main)] active:scale-90 transition-transform disabled:opacity-30"
-            onClick={goNext}
-            disabled={pageRef.current >= MONTHS_DATA.length - 1}
-          >▼</button>
-        </div>
+        )}
       </div>
-    </>
+    </main>
   );
 }

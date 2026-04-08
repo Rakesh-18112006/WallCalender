@@ -118,27 +118,27 @@ const MonthContent = ({ mIdx }: { mIdx: number }) => {
   };
 
   return (
-    <div className="flex flex-col h-full bg-[var(--bg-primary)]" style={{ '--theme-color': mData.theme } as React.CSSProperties}>
-      <header className="relative h-[140px] sm:h-[220px] min-h-[140px] sm:min-h-[220px] bg-cover bg-center z-10" style={{ backgroundImage: `url(${mData.heroImg})` }} />
+    <div className="month-content" style={{ '--theme-color': mData.theme } as React.CSSProperties}>
+      <header className="calendar-hero" style={{ backgroundImage: `url(${mData.heroImg})` }} />
       
-      <main className="flex flex-col px-4 pt-2 pb-4 flex-1 min-h-0 overflow-hidden relative select-none">
-        <div className="flex justify-between items-baseline pb-2 mb-2 sm:mb-4 border-b border-[var(--grid-border)] z-10">
-          <div className="flex items-baseline gap-1 sm:gap-2">
-            <span className="text-3xl sm:text-4xl font-light text-[#c9bcaa] leading-[0.8]">{mData.num}</span>
-            <span className="text-base sm:text-xl font-bold text-[var(--text-main)]">{mData.name}</span>
+      <main className="calendar-bottom">
+        <div className="calendar-header">
+          <div className="month-title">
+            <span className="month-number">{mData.num}</span>
+            <span className="month-name">{mData.name}</span>
           </div>
-          <div className="text-sm sm:text-lg font-bold text-[var(--text-main)]">2026</div>
+          <div className="year-title">2026</div>
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-2 sm:gap-5 flex-1 min-h-0 overflow-hidden">
+        <div className="calendar-body-layout">
           {/* Calendar Grid */}
-          <section className="flex-[1.5] flex flex-col min-h-0 overflow-hidden">
-            <div className="grid grid-cols-7 text-center font-semibold text-[10px] sm:text-xs text-[var(--text-main)] mb-1 sm:mb-2">
-              <span className="text-[var(--accent)]">Su</span>
+          <section className="grid-section">
+            <div className="weekdays">
+              <span className="weekend-header">Su</span>
               <span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
             </div>
             
-            <div className="grid grid-cols-7 grid-rows-6 border-t border-l border-[var(--grid-border)] bg-[var(--bg-primary)] flex-1 min-h-[120px] sm:min-h-[140px]">
+            <div className="days-grid">
               {Array.from({ length: mData.offset }).map((_, i) => (
                 <div key={`e-${i}`} className="day-cell empty" />
               ))}
@@ -164,39 +164,36 @@ const MonthContent = ({ mIdx }: { mIdx: number }) => {
           </section>
 
           {/* Notes Section */}
-          <aside className="flex-[1.5] flex flex-col border border-[var(--grid-border)] bg-[#FEFCF5] rounded shadow-sm p-2 sm:p-3 relative gap-1 sm:gap-2 overflow-hidden min-h-[100px] sm:min-h-[120px]" ref={notesRef}>
-            <div className="absolute -top-2 left-1/2 -translate-x-1/2 -rotate-1 w-12 h-4 bg-white/70 shadow-sm rounded-sm hidden sm:block" />
-            <div className="text-[10px] font-bold text-[var(--text-main)] uppercase tracking-wider border-b border-black/5 pb-1">Notes</div>
+          <aside className="notes-section" ref={notesRef}>
+            <div className="notes-title">Notes</div>
             
-            <div className="flex-1 overflow-y-auto flex flex-col gap-1">
+            <div className="notes-list">
               {notes.length === 0 && (
-                <p className="text-[10px] text-[var(--text-muted)] italic text-center py-2">No notes yet.</p>
+                <p className="notes-empty">No notes yet.</p>
               )}
               {notes.map((n) => (
-                <div key={n.id} className="relative group p-1.5 border-b border-dashed border-black/5 flex flex-col gap-1">
+                <div key={n.id} className="note-card group">
                   {editId === n.id ? (
-                    <div className="flex flex-col gap-1">
+                    <div className="note-edit-box">
                       <input
-                        className="w-full text-[10px] font-['Caveat'] p-1 border border-[var(--grid-border)] rounded outline-none"
+                        className="note-edit-input"
                         value={editText}
                         onChange={(e) => setEditText(e.target.value)}
                         onKeyDown={(e) => { if (e.key === 'Enter') handleEditSave(); if (e.key === 'Escape') handleEditCancel(); }}
                         autoFocus
                       />
-                      <div className="flex gap-1 justify-end">
-                        <button className="w-5 h-5 flex items-center justify-center bg-emerald-50 text-emerald-600 rounded" onClick={handleEditSave}>✓</button>
-                        <button className="w-5 h-5 flex items-center justify-center bg-red-50 text-red-600 rounded" onClick={handleEditCancel}>✕</button>
+                      <div className="note-edit-actions">
+                        <button className="note-icon-btn save" onClick={handleEditSave}>✓</button>
+                        <button className="note-icon-btn cancel" onClick={handleEditCancel}>✕</button>
                       </div>
                     </div>
                   ) : (
                     <>
-                      {n.dateRange && (
-                        <span className="text-[8px] font-bold text-[var(--selection-main)] bg-[var(--selection-bg)] px-1.5 py-0.5 rounded w-fit">{n.dateRange}</span>
-                      )}
-                      <p className="text-[10px] text-[var(--text-main)] leading-tight font-['Caveat'] pr-8 truncate overflow-hidden whitespace-normal">{n.text}</p>
-                      <div className="flex gap-1 absolute right-1 top-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
-                        <button className="w-4 h-4 flex items-center justify-center bg-black/5 hover:bg-black/10 rounded text-[10px]" onClick={() => handleEditStart(n)}>✎</button>
-                        <button className="w-4 h-4 flex items-center justify-center bg-black/5 hover:bg-red-50 hover:text-red-500 rounded text-[10px]" onClick={() => handleDelete(n.id)}>🗑</button>
+                      {n.dateRange && <span className="note-date-badge">{n.dateRange}</span>}
+                      <p className="note-text">{n.text}</p>
+                      <div className="note-actions">
+                        <button className="note-icon-btn" onClick={() => handleEditStart(n)}>✎</button>
+                        <button className="note-icon-btn delete" onClick={() => handleDelete(n.id)}>🗑</button>
                       </div>
                     </>
                   )}
@@ -204,23 +201,23 @@ const MonthContent = ({ mIdx }: { mIdx: number }) => {
               ))}
             </div>
 
-            <div className="flex flex-col gap-1 sm:gap-2 mt-auto pt-2 border-t border-black/5">
+            <div className="note-add-area">
               <textarea
-                className="w-full text-[10px] p-1.5 border border-black/10 rounded outline-none focus:border-[var(--selection-main)] resize-none"
+                className="note-textarea"
                 value={newText}
                 onChange={(e) => setNewText(e.target.value)}
                 placeholder="Write a note…"
                 rows={1}
               />
-              <div className="flex justify-between items-center">
-                <span className={`text-[9px] text-emerald-500 font-bold transition-opacity ${savedToast ? 'opacity-100' : 'opacity-0'}`}>✓ Saved!</span>
-                <button className="px-3 py-1 bg-[var(--selection-main)] text-white text-[10px] font-bold rounded hover:bg-[#D45A44] transition-colors" onClick={handleAdd}>Save</button>
+              <div className="note-add-footer">
+                <span className={`note-saved-toast ${savedToast ? 'visible' : ''}`}>✓ Saved!</span>
+                <button className="note-save-btn" onClick={handleAdd}>Save</button>
               </div>
             </div>
           </aside>
         </div>
 
-        <div className="text-[10px] text-[var(--text-muted)] mt-2 sm:mt-3 ml-1 shrink-0 bg-[var(--bg-primary)] z-10 block">
+        <div className="holiday-text">
           {mIdx === 0 && "Jan 1: New Year's Day"}
           {mIdx === 1 && "Feb 14: Valentine's Day"}
           {mIdx === 10 && "Nov 26: Thanksgiving"}

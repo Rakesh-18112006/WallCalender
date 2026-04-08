@@ -2,26 +2,30 @@
 
 :root {
   --font-family: var(--font-outfit), "Outfit", "Inter", sans-serif;
-  --bg-primary: #FDF7F2;
-  --text-main: #4A4238;
-  --text-muted: #9E9387;
-  --accent: #C27369;
-  --highlight-bg: rgba(194, 115, 105, 0.15);
-  --grid-border: #E8DFD5;
-  --paper-line: #E8DFD5;
-  --selection-main: #E56B55;
-  --selection-bg: rgba(229, 107, 85, 0.30);
+  --bg-wall: #A5B898; /* Base green for texture fallback */
+  --text-main: #2D3436;
+  --text-muted: #636E72;
+  --accent: #E17055;
+  --grid-border: rgba(0, 0, 0, 0.08);
+  --paper-line: rgba(0, 0, 0, 0.05);
+  --selection-main: #E17055;
+  --selection-bg: rgba(225, 112, 85, 0.2);
   
-  /* Responsive sizing */
+  /* Glassmorphism Tokens */
+  --glass-bg: rgba(255, 255, 255, 0.35);
+  --glass-border: rgba(255, 255, 255, 0.4);
+  --glass-blur: blur(15px);
+  
+  /* Sizing */
   --cal-width: 340px;
   --cal-height: 510px;
   --cal-scale: 1;
 }
 
-@media (max-width: 400px) {
+@media (max-width: 768px) {
   :root { --cal-scale: 0.85; }
 }
-@media (max-width: 350px) {
+@media (max-width: 480px) {
   :root { --cal-scale: 0.75; }
 }
 
@@ -60,48 +64,119 @@ body {
 /* Environment */
 .room-environment {
   position: fixed; inset: 0;
-  background-image: url('/Firefly.webp');
-  background-size: 100vw 100vh;
-  background-position: center;
-  background-repeat: no-repeat;
+  background: url('/wall_bg2.png') center/cover no-repeat;
   z-index: -1;
   pointer-events: none;
-  touch-action: none;
 }
-.room-lighting {
+
+/* Glassmorphism Scene Overlays */
+.scene-vignette {
   position: fixed; inset: 0;
-  background: radial-gradient(circle at 10% 40%, rgba(255,255,255,0.08) 0%, rgba(0,0,0,0.15) 100%);
+  background: radial-gradient(circle at center, transparent 20%, rgba(0,0,0,0.1) 100%);
   pointer-events: none;
-  touch-action: none;
   z-index: 0;
 }
 
+.calendar-scene-container {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  perspective: 1500px;
+  overflow: hidden;
+}
+
+/* ========== PHYSICAL ATTACHMENTS ========== */
+.calendar-wrapper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transform: scale(var(--cal-scale));
+  transform-origin: center center;
+}
+
+.attachment-system {
+  position: absolute;
+  top: -60px;
+  width: 100%;
+  height: 60px;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.metallic-nail {
+  width: 10px;
+  height: 10px;
+  background: conic-gradient(from -45deg, #636e72, #dfe6e9, #636e72, #2d3436);
+  border-radius: 50%;
+  box-shadow: 
+    1.5px 2px 3px rgba(0,0,0,0.4),
+    inset 0 1px 1px rgba(255,255,255,0.6);
+  position: absolute;
+  top: 10px;
+}
+.nail-left { left: 40px; }
+.nail-right { right: 40px; }
+
+.coil-spring-binding {
+  width: calc(100% - 80px);
+  height: 14px;
+  position: absolute;
+  top: 8px;
+  background: repeating-linear-gradient(
+    90deg,
+    #636e72 0px, 
+    #b2bec3 2px, 
+    #636e72 4px,
+    transparent 4px,
+    transparent 6px
+  );
+  border-radius: 7px;
+  box-shadow: 
+    0 4px 6px rgba(0,0,0,0.15),
+    0 1px 2px rgba(0,0,0,0.1);
+  z-index: 5;
+}
+
+/* Hanging wires connecting spring to calendar */
+.hanging-tether {
+  position: absolute;
+  width: 2px;
+  height: 30px;
+  background: #636e72;
+  top: 18px;
+  box-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+}
+.tether-left { left: 44px; }
+.tether-right { right: 44px; }
+
 /* ========== WALL CALENDAR WRAPPER ========== */
 .wall-calendar-wrapper {
-  position: absolute;
-  top: 13vh;
-  left: 50%;
-  transform: translateX(-50%) scale(var(--cal-scale));
-  transform-origin: top center;
+  position: relative;
   z-index: 10;
-  width: 340px;
-  height: 510px;
+  width: var(--cal-width);
+  height: var(--cal-height);
   background: transparent;
   display: flex;
   flex-direction: column;
+  /* Layered diffused shadows */
   box-shadow:
-    0 40px 60px -15px rgba(0,0,0,0.5),
-    0 10px 15px -5px rgba(0,0,0,0.1);
+    0 4px 4px rgba(0,0,0,0.05),
+    0 8px 8px rgba(0,0,0,0.05),
+    0 16px 16px rgba(0,0,0,0.05),
+    0 32px 32px rgba(0,0,0,0.05),
+    0 64px 64px rgba(0,0,0,0.05),
+    10px 20px 40px rgba(0,0,0,0.15);
   will-change: transform;
-  animation: wall-sway 12s infinite ease-in-out;
+  animation: wall-sway 10s infinite ease-in-out;
 }
 
 @keyframes wall-sway {
-  0%   { transform: translateX(-50%) scale(var(--cal-scale)) perspective(1200px) rotateX(0.5deg) rotateY(-0.2deg); }
-  25%  { transform: translateX(-50%) scale(var(--cal-scale)) perspective(1200px) rotateX(2.5deg) rotateY(1.2deg); }
-  50%  { transform: translateX(-50%) scale(var(--cal-scale)) perspective(1200px) rotateX(0.8deg) rotateY(0.2deg); }
-  75%  { transform: translateX(-50%) scale(var(--cal-scale)) perspective(1200px) rotateX(3.5deg) rotateY(-1.5deg); }
-  100% { transform: translateX(-50%) scale(var(--cal-scale)) perspective(1200px) rotateX(0.5deg) rotateY(-0.2deg); }
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(0.4deg); }
 }
 
 /* ========== FLIPBOOK ENGINE (react-pageflip with 90deg rotation hack) ========== */
@@ -126,25 +201,25 @@ body {
 }
 
 .flipbook-derotated-page {
-  width: 340px !important;
-  height: 510px !important;
+  width: var(--cal-width) !important;
+  height: var(--cal-height) !important;
   transform: rotate(-90deg);
   transform-origin: center center;
   display: flex !important;
   flex-direction: column !important;
-  background: white;
+  background: transparent; /* Glass effect will be in MonthContent */
   overflow: hidden;
   position: absolute;
-  top: -85px;
-  left: 85px;
+  top: calc((var(--cal-height) - var(--cal-width)) / -2);
+  left: calc((var(--cal-height) - var(--cal-width)) / 2);
 }
 
 /* ========== BACKWARD FLIP OVERLAY ========== */
 .prev-flip-overlay {
   position: absolute;
   top: 0; left: 0;
-  width: 340px;
-  height: 510px;
+  width: var(--cal-width);
+  height: var(--cal-height);
   z-index: 100;
   perspective: 800px;
   pointer-events: none;
@@ -162,10 +237,10 @@ body {
 }
 
 .prev-flip-page {
-  width: 340px;
-  height: 510px;
+  width: var(--cal-width);
+  height: var(--cal-height);
   position: relative;
-  background: white;
+  background: transparent;
   transform-origin: top center;
   animation: prevFlipUp 0.85s cubic-bezier(0.55, 0.06, 0.68, 0.19) forwards;
   overflow: hidden;
@@ -243,7 +318,12 @@ body {
   display: flex;
   flex-direction: column;
   height: 100%;
-  background: var(--bg-primary);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  box-shadow: inset 0 0 40px rgba(255, 255, 255, 0.1);
 }
 
 /* Hero Image */
@@ -390,7 +470,21 @@ body {
 .note-textarea:focus { border-color: var(--selection-main); }
 .note-add-footer { display: flex; justify-content: space-between; align-items: center; }
 .note-saved-toast { font-size: 0.55rem; color: #10B981; font-weight: 600; opacity: 0; transition: opacity 0.3s ease; }
-.note-saved-toast.visible { opacity: 1; }
+.calendar-flipbook-page {
+  background: transparent !important;
+}
+
+.flipbook-engine {
+  background: transparent !important;
+}
+
+.stf__parent {
+  background: transparent !important;
+}
+
+.stf__item {
+  background: transparent !important;
+}
 .note-save-btn { padding: 3px 10px; font-size: 0.58rem; font-weight: 600; color: white; background: var(--selection-main); border: none; border-radius: 4px; cursor: pointer; transition: background 0.15s; }
 .note-save-btn:hover { background: #D45A44; }
 .holiday-text { font-size: 0.55rem; color: var(--text-muted); margin-top: 6px; margin-left: 5px; }
