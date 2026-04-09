@@ -1,30 +1,30 @@
 # Interactive Wall Calendar
 
-A polished, highly interactive React/Next.js component built to simulate the physical aesthetic and tactile feel of a real-world wall calendar. 
+A polished, highly interactive React/Next.js application built to simulate the physical aesthetic and tactile feel of a real-world wall calendar. 
 
-> **Live Demo:** [Insert Vercel Link Here]
-> **Video Walkthrough:** [Insert Loom/YouTube Link Here]
+
 
 ## ✨ Features & "Stand Out" Implementations
 
-This project satisfies all baseline requirements from the engineering challenge and introduces several advanced UI/UX concepts:
+This project goes beyond a standard date picker and introduces several advanced UI/UX concepts:
 
-- **Realistic Physical Aesthetics:** Utilizes a custom 3D environment, realistic CSS-based spiral bindings, and a subtle keyframe "breeze" animation (`wall-sway`) to simulate a hanging calendar.
-- **Vertical 3D Flipbook Engine:** Leveraged and heavily customized `react-pageflip` (rotated by 90 degrees) to simulate an authentic vertical page-tearing/flipping motion, complete with **synchronized page-turn audio**.
-- **Dynamic Theming:** Each month uses a custom data structure to inject beautiful, thematic accent colors mapping exactly to the high-quality hero images.
-- **Day Range Selector & State Management:** Users can select start and end date ranges elegantly. Global state is managed efficiently using a custom decoupled vanilla store without heavy framework dependencies, and state is gracefully persisted via `localStorage`.
-- **Integrated Sticky Notes System:** A fully functional localized CRUD note-taking feature. Notes are beautifully textured with handwritten web fonts (`Caveat`) and automatically associate themselves with the user's active Date Range selection. 
-- **Flawless Responsiveness:** Uses Tailwind CSS to shift the layout intelligently. Desktop features a side-by-side component mapping; mobile collapses into a scrollable, touch-friendly interface with specialized native bottom-navigation controls that bypass frustrating touch-screen clipping issues.
+- **Realistic Physical Aesthetics:** Utilizes a custom 3D environment, metallic nails, realistic CSS-based spiral bindings, and a subtle keyframe "breeze" animation (`wall-sway` and `calendar-3d-wind`) to simulate a hanging calendar reacting to its environment.
+- **Vertical 3D Flipbook Engine:** Leveraged and heavily customized `react-pageflip` (rotated by 90 degrees) to simulate an authentic vertical page-tearing/flipping motion. It features a custom `PrevFlipOverlay` to accurately render backwards flips, complete with **synchronized page-turn audio**.
+- **Dynamic Theming & Glassmorphism:** Each month uses a custom data structure to inject beautiful, thematic accent colors matching the high-quality hero image, backed by modern glassmorphic overlays.
+- **Smart Date Range & Selection:** Users can select start and end date ranges effortlessly. Selections are smartly scoped—navigating to a new month automatically clears the selection to prevent confusing cross-month artifacts.
+- **Integrated Sticky Notes System:** A fully functional localized CRUD note-taking feature. Notes automatically associate themselves with the user's active Date Range selection. It includes comprehensive edge-case handling, such as scalable success/error toast notifications when users forget to select a date.
+- **Smart Scroll Propagation:** Custom event listeners intercept scroll events within the Notes panel. The `smartWheel` logic allows users to easily read their notes, and seamlessly cascades leftover scroll momentum into full-page calendar turns.
+- **Flawless Responsiveness:** Uses intelligent layout shifts. Desktop features a side-by-side component mapping; mobile collapses into a scrollable interface with specialized native bottom-navigation controls and touch-gesture support (swipe up/down) to flip months.
 
 ## 🏗 Modular Architecture
 
-The codebase strictly adheres to modern Frontend engineering principles. The architecture isolates concerns to keep the view layer extremely clean:
+The codebase strictly adheres to modern Frontend engineering principles. The architecture isolates concerns into highly focused, reusable modules:
 
-- `/app/components/`: Reusable, single-responsibility UI (e.g., `MonthContent.tsx`, `DesktopPageUI.tsx`).
-- `/app/store/`: Vanilla event-driven state store for global selection/hover states.
-- `/app/utils/`: Pure functions for local storage logic and string extractions.
+- `/app/components/`: Reusable, single-responsibility UI components (`MonthContent.tsx`, `AttachmentSystem.tsx`, `SpiralRings.tsx`, `MobileNavigation.tsx`).
+- `/app/store/`: Vanilla event-driven state store for global selection/hover states, allowing inter-component communication without heavy framework dependencies.
+- `/app/utils/`: Pure functions handling LocalStorage CRUD operations and text parsing logic.
 - `/app/mocks/`: Clean extraction of all static configuration data mapping out the UI structures.
-- `/app/types/`: Centralized TypeScript interfaces ensuring strict type safety across the board.
+- `/app/types/`: Centralized TypeScript interfaces ensuring strict type-safety across the codebase.
 
 ## 🚀 Getting Started
 
@@ -40,11 +40,11 @@ Run the development server:
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result. You can use your keyboard arrows, mouse wheel, or intuitive click-and-drag to interact with the calendar!
 
 ## 🛠 Tech Stack
 - **Framework:** Next.js 14 (App Router) / React
-- **Styling:** Tailwind CSS + Vanilla CSS 3D Transforms
+- **Styling:** Tailwind CSS + Custom CSS Variables + Advanced 3D Transforms
 - **Animation Engine:** `react-pageflip`
 - **Languages:** TypeScript
-- **Storage Strategy:** Client-side `localStorage` API integration
+- **Storage:** Client-side `localStorage` API integration
